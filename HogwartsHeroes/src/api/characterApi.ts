@@ -13,6 +13,19 @@ export interface CharacterFilterParams {
   [key: string]: string | undefined; 
 };
 
+export interface CharacterDetails {
+  id: string;
+  name: string;
+  house: string | null;
+  image: string | null;
+  patronus: string | null;
+  species: string | null;
+  wiki: string;
+  blood_status: string | null;
+  alias_names: string[];
+};
+
+
 export const processCharacters = (rawCharacters: any[]): Character[] => {
   return rawCharacters.map((char) => ({
     id: char.id,
@@ -117,4 +130,28 @@ export const getFilteredCharacters = async (filters: CharacterFilterParams): Pro
   }
 };
 
+export const getCharacterDetails = async (id: string): Promise<CharacterDetails | null> => {
+  try {
+    const response = await apiClient.get(`/characters/${id}`);
+
+    if (response.data && response.data.data) {
+      const character = response.data.data;
+      return {
+        id: character.id,
+        name: character.attributes.name,
+        house: character.attributes.house,
+        image: character.attributes.image,
+        patronus: character.attributes.patronus,
+        species: character.attributes.species,
+        wiki: character.attributes.wiki,
+        blood_status: character.attributes.blood_status,
+        alias_names: character.attributes.alias_names || [],
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching character details:', error);
+    throw error;
+  }
+};
 

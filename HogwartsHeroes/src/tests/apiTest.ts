@@ -1,4 +1,4 @@
-import { getAllCharacters, searchCharacters, getFilteredCharacters,  } from '../api/characterApi';
+import { getAllCharacters, searchCharacters, getFilteredCharacters, getCharacterDetails } from '../api/characterApi';
 
 
 (async () => {
@@ -12,7 +12,9 @@ import { getAllCharacters, searchCharacters, getFilteredCharacters,  } from '../
 
     // const filteredCharacters = await getFilteredCharacters({ house: 'Gryffindor', gender: 'Male'});
     // console.log(filteredCharacters);
-
+    
+    const characterDetail = await getCharacterDetails("d1f94573-614b-4e67-a372-2ff5ef641456");
+    console.log(characterDetail);
 
   } catch (error) {
     console.error('Test failed:', error);
