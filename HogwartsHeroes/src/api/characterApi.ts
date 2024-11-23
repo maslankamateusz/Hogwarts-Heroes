@@ -4,7 +4,14 @@ export interface Character {
   id: string;
   name: string;
   image: string;
-}
+};
+
+export interface CharacterFilterParams {
+  house?: string;
+  patronus?: string;
+  bloodStatus?: string;
+  [key: string]: string | undefined; 
+};
 
 export const processCharacters = (rawCharacters: any[]): Character[] => {
   return rawCharacters.map((char) => ({
@@ -72,3 +79,42 @@ export const searchCharacters = async (searchQuery: string): Promise<Character[]
     throw error;
   }
 };
+
+export const getFilteredCharacters = async (filters: CharacterFilterParams): Promise<Character[]> => {
+  let allFilteredCharacters: Character[] = [];
+  let currentPage = 1;
+  let lastPage = 1;
+
+  try {
+    const apiFilters = Object.entries(filters).reduce((acc, [key, value]) => {
+      if (value) {
+        acc[`filter[${key}_cont]`] = value; 
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    while (currentPage <= lastPage) {
+      const response = await apiClient.get('/characters', {
+        params: {
+          ...apiFilters,
+          'page[number]': currentPage,
+          'page[size]': 100, 
+        },
+      });
+
+      const rawCharacters = response.data.data;
+      const processedCharacters = processCharacters(rawCharacters);
+      allFilteredCharacters = [...allFilteredCharacters, ...processedCharacters];
+
+      lastPage = response.data.meta.pagination.last;
+      currentPage++;
+    }
+
+    return allFilteredCharacters;
+  } catch (error) {
+    console.error('Error fetching filtered characters:', error);
+    throw error;
+  }
+};
+
+
