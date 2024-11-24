@@ -1,11 +1,5 @@
 import axios from 'axios';
-import { LocalStorage } from 'node-localstorage';
-
-const isNodeEnvironment = typeof window === 'undefined';
-
-const localStorage = isNodeEnvironment
-  ? new LocalStorage('./scratch')  
-  : window.localStorage;  
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOCAL_STORAGE_KEY = 'charactersCache';
 
@@ -17,28 +11,32 @@ const apiClient = axios.create({
   },
 });
 
-const loadCacheFromLocalStorage = (): { characters: Character[]; timestamp: number | null } => {
-  const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (cachedData) {
-    try {
+const loadCacheFromLocalStorage = async (): Promise<{ characters: Character[]; timestamp: number | null }> => {
+  try {
+    const cachedData = await AsyncStorage.getItem(LOCAL_STORAGE_KEY);
+    if (cachedData) {
       const parsedData = JSON.parse(cachedData);
       return {
         characters: parsedData.characters || [],
         timestamp: parsedData.timestamp || null,
       };
-    } catch (error) {
-      console.error('Error parsing cache:', error);
     }
+  } catch (error) {
+    console.error('Error loading from AsyncStorage:', error);
   }
   return { characters: [], timestamp: null };
 };
 
-const saveCacheToLocalStorage = (characters: Character[]) => {
+const saveCacheToLocalStorage = async (characters: Character[]) => {
   const cacheData = {
     characters,
     timestamp: Date.now(),
   };
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cacheData));
+  try {
+    await AsyncStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cacheData));
+  } catch (error) {
+    console.error('Error saving to AsyncStorage:', error);
+  }
 };
 
 apiClient.interceptors.request.use(
@@ -105,7 +103,7 @@ export const processCharacterDetails = (rawCharacter: any): CharacterDetails => 
 };
 
 export const getAllCharacters = async (): Promise<Character[]> => {
-  const { characters, timestamp } = loadCacheFromLocalStorage();
+  const { characters, timestamp } = await loadCacheFromLocalStorage();
 
   if (characters.length > 0 && timestamp && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
     console.log('Using cached characters');
@@ -134,7 +132,7 @@ export const getAllCharacters = async (): Promise<Character[]> => {
       currentPage++;
     }
 
-    saveCacheToLocalStorage(allCharacters);
+    await saveCacheToLocalStorage(allCharacters);
     return allCharacters;
   } catch (error) {
     console.error('Error fetching all characters:', error);
@@ -151,7 +149,6 @@ export const searchCharacters = async (searchQuery: string): Promise<Character[]
     searchWords.every((word) => character.name.toLowerCase().includes(word))
   );
 };
-
 
 export const getFilteredCharacters = async (filters: CharacterFilterParams): Promise<Character[]> => {
   let allFilteredCharacters: Character[] = [];
@@ -204,6 +201,7 @@ export const getCharacterDetails = async (id: string): Promise<CharacterDetails 
     throw error;
   }
 };
+
 export const getFilterFields = (): string[] => {
   return ['house', 'patronus', 'species', 'blood_status', 'born', 'died'];
 };
