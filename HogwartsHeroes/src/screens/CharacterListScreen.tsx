@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, TextInput, Button, TouchableOpacity } from 'react-native';
-import { getAllCharacters, searchCharacters, getFilteredCharacters, getFilterFields, Character, CharacterFilterParams } from '../api/characterApi';
+import { getAllCharacters, getFilteredCharacters, getFilterFields, getCharacterDetails, Character, CharacterFilterParams, CharacterDetails } from '../api/characterApi';
+import CharacterDetailsModal from '../components/CharacterDetailsModal';
 
 const CharacterListScreen = () => {
-  const [characters, setCharacters] = useState<Character[]>([]);  
-  const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]); 
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<CharacterFilterParams>({});  
-  const [filtersVisible, setFiltersVisible] = useState(false);  
+  const [filters, setFilters] = useState<CharacterFilterParams>({});
+  const [filtersVisible, setFiltersVisible] = useState(false);
+
+  const [selectedCharacter, setSelectedCharacter] = useState<CharacterDetails | null>(null); 
+  const [detailsLoading, setDetailsLoading] = useState(false); 
 
   const loadCharacters = async () => {
     if (loading) return;
-    
+
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
       const newCharacters = await getAllCharacters();
-      setCharacters(newCharacters);  
-      setFilteredCharacters(newCharacters);  
+      setCharacters(newCharacters);
+      setFilteredCharacters(newCharacters);
     } catch (error) {
       console.error('Error loading characters:', error);
     } finally {
@@ -34,7 +38,7 @@ const CharacterListScreen = () => {
     setLoading(true);
     try {
       const filtered = await getFilteredCharacters({ ...filters, name: searchQuery });
-      setFilteredCharacters(filtered); 
+      setFilteredCharacters(filtered);
     } catch (error) {
       console.error('Error applying filters:', error);
     } finally {
@@ -55,9 +59,9 @@ const CharacterListScreen = () => {
 
   useEffect(() => {
     if (searchQuery.trim() || Object.keys(filters).length > 0) {
-      applyFilters(); 
+      applyFilters();
     }
-  }, [searchQuery, filters]); 
+  }, [searchQuery, filters]);
 
   const filterFields = getFilterFields();
 
@@ -65,17 +69,28 @@ const CharacterListScreen = () => {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
-  
+
+  const handleCharacterPress = async (id: string) => {
+    setDetailsLoading(true);
+    try {
+      const details = await getCharacterDetails(id); 
+      setSelectedCharacter(details);      
+    } catch (error) {
+      console.error('Error fetching character details', error);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
 
   const renderItem = ({ item }: { item: Character }) => (
-    <View style={styles.card}>
+    <TouchableOpacity onPress={() => handleCharacterPress(item.id)} style={styles.card}>
       <Text style={styles.name}>{item.name}</Text>
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.image} />
       ) : (
         <View style={styles.placeholder} />
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   const renderFooter = () => {
@@ -93,7 +108,7 @@ const CharacterListScreen = () => {
         style={styles.searchInput}
         placeholder="Search characters..."
         value={searchQuery}
-        onChangeText={setSearchQuery} 
+        onChangeText={setSearchQuery}
       />
 
       <TouchableOpacity onPress={toggleFilters} style={styles.filtersButton}>
@@ -121,12 +136,19 @@ const CharacterListScreen = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
-          data={filteredCharacters}  
+          data={filteredCharacters}
           renderItem={renderItem}
           keyExtractor={(item, index) => item.id ? item.id : `${index}`}
           ListFooterComponent={renderFooter}
         />
       )}
+
+      <CharacterDetailsModal
+        isVisible={!!selectedCharacter}
+        character={selectedCharacter}
+        loading={detailsLoading}
+        onClose={() => setSelectedCharacter(null)} 
+      />
     </View>
   );
 };
