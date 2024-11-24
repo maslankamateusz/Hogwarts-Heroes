@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image } from 'react-native';
-import { getAllCharacters, Character } from '../api/characterApi';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, TextInput } from 'react-native';
+import { getAllCharacters, searchCharacters, Character } from '../api/characterApi';
 
 const CharacterListScreen = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -13,7 +15,7 @@ const CharacterListScreen = () => {
   
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100)); 
   
       const newCharacters = await getAllCharacters();
       setCharacters((prev) => [...prev, ...newCharacters]);
@@ -25,11 +27,22 @@ const CharacterListScreen = () => {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     loadCharacters();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const search = async () => {
+        const result = await searchCharacters(searchQuery);
+        setFilteredCharacters(result);
+      };
+      search();
+    } else {
+      setFilteredCharacters(characters); 
+    }
+  }, [searchQuery, characters]); 
 
   const renderItem = ({ item }: { item: Character }) => (
     <View style={styles.card}>
@@ -41,7 +54,6 @@ const CharacterListScreen = () => {
       )}
     </View>
   );
-  
 
   const renderFooter = () => {
     if (!loading) return null;
@@ -55,16 +67,23 @@ const CharacterListScreen = () => {
 
   return (
     <View style={styles.container}>
-      {characters.length === 0 && loading ? ( 
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search characters..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+
+      {filteredCharacters.length === 0 && loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
-          data={characters}
+          data={filteredCharacters}
           renderItem={renderItem}
-          keyExtractor={(item, index) => item.id ? item.id : `${index}`} 
-          ListFooterComponent={renderFooter} 
-          onEndReached={loadCharacters} 
-          onEndReachedThreshold={0.5} 
+          keyExtractor={(item, index) => item.id ? item.id : `${index}`}
+          ListFooterComponent={renderFooter}
+          onEndReached={loadCharacters}
+          onEndReachedThreshold={0.5}
         />
       )}
     </View>
@@ -75,6 +94,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  searchInput: {
+    height: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    paddingLeft: 10,
+    fontSize: 16,
   },
   card: {
     flexDirection: 'row',
@@ -107,16 +135,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  placeholderText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#555',
-  },
   footer: {
     padding: 10,
     alignItems: 'center',
   },
 });
-
 
 export default CharacterListScreen;
