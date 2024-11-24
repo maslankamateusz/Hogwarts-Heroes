@@ -203,5 +203,5 @@ export const getCharacterDetails = async (id: string): Promise<CharacterDetails 
 };
 
 export const getFilterFields = (): string[] => {
-  return ['house', 'patronus', 'species', 'blood_status', 'born', 'died'];
+  return ['house', 'patronus', 'species', 'blood_status', 'gender'];
 };
