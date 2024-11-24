@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, TextInput } from 'react-native';
-import { getAllCharacters, searchCharacters, Character } from '../api/characterApi';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, Image, TextInput, Button, TouchableOpacity } from 'react-native';
+import { getAllCharacters, searchCharacters, getFilteredCharacters, getFilterFields, Character, CharacterFilterParams } from '../api/characterApi';
 
 const CharacterListScreen = () => {
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [characters, setCharacters] = useState<Character[]>([]);  
+  const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]); 
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCharacters, setFilteredCharacters] = useState<Character[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [filters, setFilters] = useState<CharacterFilterParams>({});  
+  const [filtersVisible, setFiltersVisible] = useState(false);  
 
   const loadCharacters = async () => {
-    if (loading || !hasMore) return;
-  
+    if (loading) return;
+    
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 100)); 
-  
+      await new Promise((resolve) => setTimeout(resolve, 100));
       const newCharacters = await getAllCharacters();
-      setCharacters((prev) => [...prev, ...newCharacters]);
-      setPage((prevPage) => prevPage + 1);
-      setHasMore(newCharacters.length > 0);
+      setCharacters(newCharacters);  
+      setFilteredCharacters(newCharacters);  
     } catch (error) {
       console.error('Error loading characters:', error);
     } finally {
@@ -32,17 +30,42 @@ const CharacterListScreen = () => {
     loadCharacters();
   }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const search = async () => {
-        const result = await searchCharacters(searchQuery);
-        setFilteredCharacters(result);
-      };
-      search();
-    } else {
-      setFilteredCharacters(characters); 
+  const applyFilters = async () => {
+    setLoading(true);
+    try {
+      const filtered = await getFilteredCharacters({ ...filters, name: searchQuery });
+      setFilteredCharacters(filtered); 
+    } catch (error) {
+      console.error('Error applying filters:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [searchQuery, characters]); 
+  };
+
+  const toggleFilters = () => {
+    setFiltersVisible(!filtersVisible);
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [field]: value,
+    }));
+  };
+
+  useEffect(() => {
+    if (searchQuery.trim() || Object.keys(filters).length > 0) {
+      applyFilters(); 
+    }
+  }, [searchQuery, filters]); 
+
+  const filterFields = getFilterFields();
+
+  const capitalize = (str: string): string => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+  
 
   const renderItem = ({ item }: { item: Character }) => (
     <View style={styles.card}>
@@ -57,7 +80,6 @@ const CharacterListScreen = () => {
 
   const renderFooter = () => {
     if (!loading) return null;
-
     return (
       <View style={styles.footer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -71,19 +93,38 @@ const CharacterListScreen = () => {
         style={styles.searchInput}
         placeholder="Search characters..."
         value={searchQuery}
-        onChangeText={setSearchQuery}
+        onChangeText={setSearchQuery} 
       />
+
+      <TouchableOpacity onPress={toggleFilters} style={styles.filtersButton}>
+        <Text style={styles.filtersButtonText}>{filtersVisible ? 'Hide Filters' : 'Show Filters'}</Text>
+      </TouchableOpacity>
+
+      {filtersVisible && (
+        <View style={styles.filterPanel}>
+          {filterFields.map((field) => (
+            <View key={field} style={styles.filterField}>
+              <Text>{capitalize(field)}</Text>
+              <TextInput
+                style={styles.filterInput}
+                placeholder={`Enter ${field}`}
+                value={filters[field as keyof CharacterFilterParams] || ''}
+                onChangeText={(value) => handleFilterChange(field, value)}
+              />
+            </View>
+          ))}
+          <Button title="Apply Filters" onPress={applyFilters} />
+        </View>
+      )}
 
       {filteredCharacters.length === 0 && loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
-          data={filteredCharacters}
+          data={filteredCharacters}  
           renderItem={renderItem}
           keyExtractor={(item, index) => item.id ? item.id : `${index}`}
           ListFooterComponent={renderFooter}
-          onEndReached={loadCharacters}
-          onEndReachedThreshold={0.5}
         />
       )}
     </View>
@@ -101,6 +142,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
+    paddingLeft: 10,
+    fontSize: 16,
+  },
+  filtersButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  filtersButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  filterPanel: {
+    marginBottom: 10,
+    backgroundColor: '#f1f1f1',
+    padding: 10,
+    borderRadius: 5,
+  },
+  filterField: {
+    marginBottom: 10,
+  },
+  filterInput: {
+    height: 48,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
     paddingLeft: 10,
     fontSize: 16,
   },
