@@ -1,40 +1,116 @@
-import apiClient from './apiClient';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const LOCAL_STORAGE_KEY = 'charactersCache';
+
+const apiClient = axios.create({
+  baseURL: 'https://api.potterdb.com/v1',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+const loadCacheFromLocalStorage = async (): Promise<{ characters: Character[]; timestamp: number | null }> => {
+  try {
+    const cachedData = await AsyncStorage.getItem(LOCAL_STORAGE_KEY);
+    if (cachedData) {
+      const parsedData = JSON.parse(cachedData);
+      return {
+        characters: parsedData.characters || [],
+        timestamp: parsedData.timestamp || null,
+      };
+    }
+  } catch (error) {
+    console.error('Error loading from AsyncStorage:', error);
+  }
+  return { characters: [], timestamp: null };
+};
+
+const saveCacheToLocalStorage = async (characters: Character[]) => {
+  const cacheData = {
+    characters,
+    timestamp: Date.now(),
+  };
+  try {
+    await AsyncStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cacheData));
+  } catch (error) {
+    console.error('Error saving to AsyncStorage:', error);
+  }
+};
+
+apiClient.interceptors.request.use(
+  (config) => config,
+  (error) => Promise.reject(error)
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response || error.message);
+    return Promise.reject(error);
+  }
+);
 
 export interface Character {
   id: string;
   name: string;
-  image: string;
-};
-
-export interface CharacterFilterParams {
-  house?: string;
-  patronus?: string;
-  bloodStatus?: string;
-  [key: string]: string | undefined; 
-};
-
-export interface CharacterDetails {
-  id: string;
-  name: string;
-  house: string | null;
   image: string | null;
+}
+
+export interface CharacterDetails extends Character {
+  house: string | null;
   patronus: string | null;
   species: string | null;
   wiki: string;
   blood_status: string | null;
   alias_names: string[];
-};
+  born: string | null;
+  died: string | null;
+}
 
+export interface CharacterFilterParams {
+  house?: string;
+  gender?: string;
+  bloodStatus?: string;
+  born?: string;
+  died?: string;
+  [key: string]: string | undefined;
+}
 
 export const processCharacters = (rawCharacters: any[]): Character[] => {
   return rawCharacters.map((char) => ({
     id: char.id,
     name: char.attributes.name || 'Unknown',
-    image: char.attributes.image || null
+    image: char.attributes.image || null,
   }));
 };
 
+export const processCharacterDetails = (rawCharacter: any): CharacterDetails => {
+  return {
+    id: rawCharacter.id,
+    name: rawCharacter.attributes.name || 'Unknown',
+    image: rawCharacter.attributes.image || null,
+    house: rawCharacter.attributes.house || 'Unknown',
+    patronus: rawCharacter.attributes.patronus || null,
+    species: rawCharacter.attributes.species || null,
+    wiki: rawCharacter.attributes.wiki || '',
+    blood_status: rawCharacter.attributes.blood_status || null,
+    alias_names: rawCharacter.attributes.alias_names || [],
+    born: rawCharacter.attributes.born || 'Unknown',
+    died: rawCharacter.attributes.died || 'Unknown',
+  };
+};
+
 export const getAllCharacters = async (): Promise<Character[]> => {
+  const { characters, timestamp } = await loadCacheFromLocalStorage();
+
+  if (characters.length > 0 && timestamp && Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+    console.log('Using cached characters');
+    return characters;
+  }
+
+  console.log('Fetching all characters from API...');
   let allCharacters: Character[] = [];
   let currentPage = 1;
   let lastPage = 1;
@@ -43,7 +119,8 @@ export const getAllCharacters = async (): Promise<Character[]> => {
     while (currentPage <= lastPage) {
       const response = await apiClient.get('/characters', {
         params: {
-          'page[number]': currentPage,  
+          'page[number]': currentPage,
+          'page[size]': 100,
         },
       });
 
@@ -52,14 +129,10 @@ export const getAllCharacters = async (): Promise<Character[]> => {
       allCharacters = [...allCharacters, ...processedCharacters];
 
       lastPage = response.data.meta.pagination.last;
-
-      if (currentPage < lastPage) {
-        currentPage++;
-      } else {
-        break;
-      }
+      currentPage++;
     }
 
+    await saveCacheToLocalStorage(allCharacters);
     return allCharacters;
   } catch (error) {
     console.error('Error fetching all characters:', error);
@@ -67,30 +140,14 @@ export const getAllCharacters = async (): Promise<Character[]> => {
   }
 };
 
-
 export const searchCharacters = async (searchQuery: string): Promise<Character[]> => {
-  if (!searchQuery.trim()) {
-    return await getAllCharacters(); 
-  }
+  const allCharacters = await getAllCharacters();
+  if (!searchQuery.trim()) return allCharacters;
 
-  let allCharacters: Character[] = [];
-
-
-  try {
-    allCharacters = await getAllCharacters();
-
-    const searchWords = searchQuery.trim().split(/\s+/);
-
-    const filteredCharacters = allCharacters.filter(character => {
-      return searchWords.every(word => character.name.toLowerCase().includes(word.toLowerCase()));
-    });
-
-    return filteredCharacters;
-
-  } catch (error) {
-    console.error('Error fetching characters by search:', error);
-    throw error;
-  }
+  const searchWords = searchQuery.trim().toLowerCase().split(/\s+/);
+  return allCharacters.filter((character) =>
+    searchWords.every((word) => character.name.toLowerCase().includes(word))
+  );
 };
 
 export const getFilteredCharacters = async (filters: CharacterFilterParams): Promise<Character[]> => {
@@ -135,18 +192,8 @@ export const getCharacterDetails = async (id: string): Promise<CharacterDetails 
     const response = await apiClient.get(`/characters/${id}`);
 
     if (response.data && response.data.data) {
-      const character = response.data.data;
-      return {
-        id: character.id,
-        name: character.attributes.name,
-        house: character.attributes.house,
-        image: character.attributes.image,
-        patronus: character.attributes.patronus,
-        species: character.attributes.species,
-        wiki: character.attributes.wiki,
-        blood_status: character.attributes.blood_status,
-        alias_names: character.attributes.alias_names || [],
-      };
+      const character = processCharacterDetails(response.data.data);
+      return character;
     }
     return null;
   } catch (error) {
@@ -155,3 +202,6 @@ export const getCharacterDetails = async (id: string): Promise<CharacterDetails 
   }
 };
 
+export const getFilterFields = (): string[] => {
+  return ['house', 'patronus', 'species', 'blood_status', 'born', 'died'];
+};
