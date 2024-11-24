@@ -4,7 +4,7 @@ const apiClient = axios.create({
   baseURL: 'https://api.potterdb.com/v1', 
   timeout: 10000, 
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', 
   },
 });
 
