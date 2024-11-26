@@ -1,5 +1,5 @@
 import { getAllCharacters, searchCharacters, getCharacterDetails, getFilterFields, getFilteredCharacters, CharacterFilterParams} from '../api/characterApi';
-
+import { getQuizQuestions } from "../api/quizApi";
 
 (async () => {
   try {
@@ -21,9 +21,11 @@ import { getAllCharacters, searchCharacters, getCharacterDetails, getFilterField
     
     // console.log(getFilterFields());
     
-
-
+    // const questions = await getQuizQuestions();
+    // console.log(questions);
+    
   } catch (error) {
     console.error('Test failed:', error);
   }
 })();
+

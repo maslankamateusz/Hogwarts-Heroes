@@ -1,0 +1,159 @@
+{
+    "questions": [
+      {
+        "question": "What house did Abigail Grey belong to?",
+        "options": ["Gryffindor", "Hufflepuff", "Ravenclaw", "Slytherin"],
+        "answer": "Gryffindor"
+      },
+      {
+        "question": "Which character had the Patronus of a goat?",
+        "options": ["Aberforth Dumbledore", "Albus Dumbledore", "Harry Potter", "Severus Snape"],
+        "answer": "Aberforth Dumbledore"
+      },
+      {
+        "question": "What species is the 2-Headed Baby?",
+        "options": ["Human", "Elf", "Centaur", "Troll"],
+        "answer": "Human"
+      },
+      {
+        "question": "Who was the captain of the Senegalese National Quidditch team?",
+        "options": ["Adou Sosseh", "Victor Krum", "Oliver Wood", "Gwenog Jones"],
+        "answer": "Adou Sosseh"
+      },
+      {
+        "question": "What job did Aesop Sharp hold at Hogwarts?",
+        "options": ["Potions Master", "Defense Against the Dark Arts Professor", "Herbology Professor", "Caretaker"],
+        "answer": "Potions Master"
+      },
+      {
+        "question": "Which family did Abraham Potter belong to?",
+        "options": ["Potter", "Black", "Weasley", "Malfoy"],
+        "answer": "Potter"
+      },
+      {
+        "question": "What was the blood status of Abigail Grey?",
+        "options": ["Half-blood", "Pure-blood", "Muggle-born", "Unknown"],
+        "answer": "Half-blood"
+      },
+      {
+        "question": "What job did Adrian hold at the Daily Prophet?",
+        "options": ["Photographer", "Journalist", "Editor", "Typist"],
+        "answer": "Photographer"
+      },
+      {
+        "question": "What was Abraxas Malfoy's house at Hogwarts?",
+        "options": ["Slytherin", "Ravenclaw", "Hufflepuff", "Gryffindor"],
+        "answer": "Slytherin"
+      },
+      {
+        "question": "What magical creature is the Abraxan at the Magical Creatures Reserve?",
+        "options": ["Abraxan", "Hippogriff", "Thestral", "Dragon"],
+        "answer": "Abraxan"
+      },
+      {
+        "question": "Who was married to Dulcibella Philbert?",
+        "options": ["Agabus Philbert", "Albus Dumbledore", "Gellert Grindelwald", "Neville Longbottom"],
+        "answer": "Agabus Philbert"
+      },
+      {
+        "question": "Which character was an animagus who could transform into a gerbil?",
+        "options": ["Adrian Tutley", "Minerva McGonagall", "Sirius Black", "James Potter"],
+        "answer": "Adrian Tutley"
+      },
+      {
+        "question": "What house was Abraham Grimblehawk sorted into?",
+        "options": ["Hufflepuff", "Slytherin", "Ravenclaw", "Gryffindor"],
+        "answer": "Hufflepuff"
+      },
+      {
+        "question": "Who was a former Auror and later became Potions Master at Hogwarts?",
+        "options": ["Aesop Sharp", "Alastor Moody", "Kingsley Shacklebolt", "Nymphadora Tonks"],
+        "answer": "Aesop Sharp"
+      },
+      {
+        "question": "Which character was known as the Waving Knight?",
+        "options": ["Affpuddle", "Sir Cadogan", "Nearly Headless Nick", "The Bloody Baron"],
+        "answer": "Affpuddle"
+      },
+      {
+        "question": "What was the blood status of the African prince?",
+        "options": ["Muggle", "Half-blood", "Pure-blood", "Unknown"],
+        "answer": "Muggle"
+      },
+      {
+        "question": "Who worked as the Charms Master at Hogwarts?",
+        "options": ["Abraham Ronen", "Filius Flitwick", "Severus Snape", "Horace Slughorn"],
+        "answer": "Abraham Ronen"
+      },
+      {
+        "question": "What job did Able Fleming hold?",
+        "options": ["President of MACUSA", "Auror", "Shopkeeper", "Caretaker"],
+        "answer": "President of MACUSA"
+      },
+      {
+        "question": "What is the Patronus of Abigail Grey?",
+        "options": ["Wolf", "Stag", "Otter", "Doe"],
+        "answer": "Wolf"
+      },
+      {
+        "question": "What is the species of Ackley Barnes?",
+        "options": ["Human", "House Elf", "Goblin", "Centaur"],
+        "answer": "Human"
+      },
+      {
+        "question": "Who was known to be married to Tarek?",
+        "options": ["Ada", "Ginny Weasley", "Narcissa Malfoy", "Hannah Abbott"],
+        "answer": "Ada"
+      },
+      {
+        "question": "Which character's nickname was 'Addie'?",
+        "options": ["Adelaide Oakes", "Adrian Pucey", "Addison Fawley", "Affpuddle"],
+        "answer": "Adelaide Oakes"
+      },
+      {
+        "question": "What was Adalbert Waffling's profession?",
+        "options": ["Magical Theoretician", "Auror", "Quidditch Player", "Hogwarts Professor"],
+        "answer": "Magical Theoretician"
+      },
+      {
+        "question": "Which family did Addison Fawley belong to?",
+        "options": ["Fawley", "Potter", "Black", "Lestrange"],
+        "answer": "Fawley"
+      },
+      {
+        "question": "Who played Crapaud in a magical play?",
+        "options": ["Actor who played Crapaud", "Actor who played Grenouille", "Ackley Barnes", "Adrian"],
+        "answer": "Actor who played Crapaud"
+      },
+      {
+        "question": "Which character's house at Hogwarts is Slytherin?",
+        "options": ["Adrian Pucey", "Adelaide Oakes", "Adam Pickering", "Aberforth Dumbledore"],
+        "answer": "Adrian Pucey"
+      },
+      {
+        "question": "What title did Adou Sosseh hold?",
+        "options": ["Captain", "Minister", "Professor", "Seeker"],
+        "answer": "Captain"
+      },
+      {
+        "question": "Who worked as an Auror and had a niece named Mathilda Grimblehawk?",
+        "options": ["Abraham Grimblehawk", "Alastor Moody", "Kingsley Shacklebolt", "Nymphadora Tonks"],
+        "answer": "Abraham Grimblehawk"
+      },
+      {
+        "question": "Which character is a member of the Sharp family?",
+        "options": ["Aesop Sharp", "Agabus Philbert", "Able Spudmore", "Aberforth Dumbledore"],
+        "answer": "Aesop Sharp"
+      },
+      {
+        "question": "Who is known for having brown eyes and working as a thief?",
+        "options": ["Ackley Barnes", "Adrian", "Agabus Philbert", "Abraham Grimblehawk"],
+        "answer": "Ackley Barnes"
+      },
+      {
+        "question": "Who is listed as a professor in their portrait?",
+        "options": ["Abraham Leslie McCracken", "Aesop Sharp", "Albus Dumbledore", "Adelaide Oakes"],
+        "answer": "Abraham Leslie McCracken"
+      }]
+}
+      
